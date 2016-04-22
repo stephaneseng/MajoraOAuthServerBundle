@@ -38,15 +38,25 @@ class TokenLoader implements TokenLoaderInterface
      */
     public function retrieveByHash($hash)
     {
+        return $this->retrieveByHashQueryBuilder($hash)
+            ->getQuery()
+                ->setMaxResults(1)
+                ->getOneOrNullResult()
+        ;
+    }
+
+    /**
+     * @param $hash
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    public function retrieveByHashQueryBuilder($hash)
+    {
         return $this->tokenRepository
             ->createQueryBuilder('t')
                 ->where('t.hash = :hash')
                     ->setParameter('hash', $hash)
                 ->andWhere('t.expireAt > :now')
                     ->setParameter('now', $this->clock->now())
-            ->getQuery()
-                ->setMaxResults(1)
-                ->getOneOrNullResult()
         ;
     }
 
@@ -55,12 +65,22 @@ class TokenLoader implements TokenLoaderInterface
      */
     public function retrieveExpired(\DateTime $datetime = null)
     {
+        return $this->retrieveExpiredQueryBuilder($datetime)
+            ->getQuery()
+                ->getResult()
+        ;
+    }
+
+    /**
+     * @param \DateTime|null $datetime
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    public function retrieveExpiredQueryBuilder(\DateTime $datetime = null)
+    {
         return $this->tokenRepository
             ->createQueryBuilder('t')
                 ->where('t.expireAt < :date')
-                ->setParameter('date', $datetime ?: $this->clock->now())
-            ->getQuery()
-                ->getResult()
+                    ->setParameter('date', $datetime ?: $this->clock->now())
         ;
     }
 }

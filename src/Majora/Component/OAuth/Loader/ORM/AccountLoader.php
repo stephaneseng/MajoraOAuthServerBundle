@@ -31,6 +31,19 @@ class AccountLoader implements AccountLoaderInterface
      */
     public function retrieveOnApplicationByUsername(ApplicationInterface $application, $username)
     {
+        return $this->retrieveOnApplicationByUsernameQueryBuilder($application, $username)
+            ->getQuery()
+                ->getOneOrNullResult()
+        ;
+    }
+
+    /**
+     * @param ApplicationInterface $application
+     * @param $username
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    public function retrieveOnApplicationByUsernameQueryBuilder(ApplicationInterface $application, $username)
+    {
         return $this->accountRepository
             ->createQueryBuilder('ac')
                 ->innerJoin('ac.applications', 'app')
@@ -38,8 +51,6 @@ class AccountLoader implements AccountLoaderInterface
                     ->setParameter('username', $username)
                 ->andWhere('app.id = :application')
                     ->setParameter('application', $application->getId())
-            ->getQuery()
-                ->getOneOrNullResult()
         ;
     }
 }
